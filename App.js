@@ -1,100 +1,91 @@
-import React from "react"
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView} from "react-native"
+import React, { Component } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  TouchableOpacity,
+  ScrollView
+} from "react-native";
 
-import Amplify, { API, graphqlOperation } from "aws-amplify"
-import config from "./aws-exports"
-import { createTodo } from "./src/graphql/mutations"
-import { listTodos } from "./src/graphql/queries"
+import MapView, {Marker} from 'react-native-maps';
 
-Amplify.configure(config)
+export default class App extends Component {
 
-export default class App extends React.Component {
-	state = {
-		name: "",
-		todos: []
-	}
-  async componentDidMount() {
-        try {
-            const todos = await API.graphql(graphqlOperation(listTodos))
-            console.log("todos: ", todos)
-            this.setState({ todos: todos.data.listTodos.items })
-        } catch (err) {
-            console.log("error: ", err)
-        }
-    }
-	onChangeText = (key, val) => {
-		this.setState({ [key]: val })
-	}
+  state = {
+    markers: [
+      {
+        title: "Lloyd Building",
+        coordinates: {
+          latitude: 53.343832,
+          longitude: -6.251728
+        },
+        description: "8"
+      },
+      {
+        title: "Arts Building",
+        coordinates: {
+          latitude: 53.343473,
+          longitude: -6.250736
+        },
+        description: "16"
+      },
+      {
+        title: "Hamilton Building",
+        coordinates: {
+          latitude: 53.343435,
+          longitude: -6.257216
+        },
+        description: "9"
+      },
+      {
+        title: "Museum Building",
+        coordinates: {
+          latitude: 53.343992,
+          longitude: -6.254657
+        },
+        description: "6"
+      }
+    ]
+  };
 
-  addNote = async event => {
-	const { name, todos } = this.state
-
-	event.preventDefault()
-
-	const input = {
-		name
-	}
-
-	const result = await API.graphql(graphqlOperation(createTodo, { input }))
-
-	const newTodo = result.data.createTodo
-	const updatedTodo = [newTodo, ...todos]
-	this.setState({ todos: updatedTodo, name: "" })
-}
-
-	render() {
-		return (
-			<View style={styles.container}>
-				<TextInput
-					style={styles.input}
-					value={this.state.name}
-					onChangeText={val => this.onChangeText("name", val)}
-					placeholder='Add a Todo'
-				/>
-				<TouchableOpacity onPress={this.addNote} style={styles.buttonContainer}>
-					<Text style={styles.buttonText}>Add +</Text>
-				</TouchableOpacity>
-        <ScrollView style={{ margin: 20 }}>
-					{this.state.todos.map((item, index) => (
-						<View key={index} style={styles.todo}>
-							<Text style={styles.name}>{item.name}</Text>
-						</View>
-					))}
-				</ScrollView>
-			</View>
-		)
-	}
+  render() {
+    return (
+      <View style={styles.container}>
+        <MapView>
+          initialRegion =
+          {{
+            latitude: 53.343701,
+            longitude: 6.254708,
+            latitudeDelta: 0,
+            longitudeDelta: 0
+          }}
+          {this.state.markers.map((marker,key) => (
+            <Marker
+              key = {index}
+              coordinate={marker.coordinates}
+              title={marker.title}
+              description={marker.description}
+            />
+          ))}
+        </MapView>
+      </View>
+    );
+  }
 }
 
 const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: "#fff",
-		paddingHorizontal: 10,
-		paddingTop: 50
-	},
-	input: {
-		height: 50,
-		borderBottomWidth: 2,
-		borderBottomColor: "blue",
-		marginVertical: 10
-	},
-	buttonContainer: {
-		backgroundColor: "#34495e",
-		marginTop: 10,
-		marginBottom: 10,
-		padding: 10,
-		borderRadius: 5,
-		alignItems: "center"
-	},
-	buttonText: {
-		color: "#fff",
-		fontSize: 24
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F5FCFF"
   },
-  todo: {
-        borderBottomWidth: 1,
-        borderBottomColor: "#ddd",
-        paddingVertical: 10
-    },
-    name: { fontSize: 16 }
-})
+  map: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0
+  }
+});
